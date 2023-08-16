@@ -1,0 +1,88 @@
+Sub Stock_Summary()
+' Go trough each worksheet
+Dim WS_Count As Integer
+Dim current As Integer
+WS_Count = ActiveWorkbook.Worksheets.Count
+For current = 1 To WS_Count
+    ' Determine the last row
+    LastRow = ActiveSheet.Cells(Rows.Count, 1).End(xlUp).Row
+    ' Name the columns
+    Cells(1, 9).Value = "Ticker"
+    Cells(1, 10).Value = "Yearly Change"
+    Cells(1, 11).Value = "Percent Change"
+    Cells(1, 12).Value = "Total Stock Volume"
+
+    'Create Variables
+    Dim Ticker As String
+    Dim Opening_Price As Double
+    Dim Closing_Price As Double
+    Dim Yearly_Change As Double
+    Dim Percent_Change As Double
+    Dim Volume As Double
+    Dim table As Double
+    Volume = 0
+    table = 2
+
+    'Start only for the first Ticker
+        Opening_Price = Cells(2, 3).Value
+        ' Loop for the rest of stocks
+        Dim I As Long
+        For I = 2 To LastRow
+            If Cells(I + 1, 1).Value <> Cells(I, 1).Value Then
+            'Give the ticker name to the row and define opening-closing prices
+            Ticker = Cells(I, 1).Value
+            Cells(table, 9).Value = Ticker
+            Closing_Price = Cells(I, 6).Value
+            ' Formulas to calcul Yearly and percentage changes and Volume
+            Yearly_Change = (Closing_Price - Opening_Price)
+            Cells(table, 10).Value = Yearly_Change
+            Percent_Change = (Yearly_Change * 100 / Opening_Price)
+            Cells(table, 11).Value = Round(Percent_Change, 2)
+            Volume = Volume + Cells(I, 7).Value
+            Cells(table, 12).Value = Volume
+            table = table + 1
+            ' Reset the variables
+            Opening_Price = Cells(I + 1, 3).Value
+            Volume = 0
+            ' If cells are the same ticker (sum up volume shares from each day)
+            Else
+            Volume = Volume + Cells(I, 7).Value
+        End If
+
+    Next I
+
+    ' Second part of module 2 - work with table
+    LastRow_2 = ActiveSheet.Cells(Rows.Count, 9).End(xlUp).Row
+    ' Set the Cell Colors
+    For j = 2 To LastRow_2
+        If (Cells(j, 10).Value >= 0) Then
+        Cells(j, 10).Interior.ColorIndex = 4
+        Else
+        Cells(j, 10).Interior.ColorIndex = 3
+        End If
+    Next j
+        
+    Cells(2, 15).Value = "Greatest % Increase"
+    Cells(3, 15).Value = "Greatest % Decrease"
+    Cells(4, 15).Value = "Greatest Total Volume"
+    Cells(1, 16).Value = "Ticker"
+    Cells(1, 17).Value = "Value"
+    ' look for min/max values
+    For y = 2 To LastRow_2
+        If Cells(y, 11).Value = Application.WorksheetFunction.Max(ActiveSheet.Range("K2:K" & LastRow_2)) Then
+        Cells(2, 16).Value = Cells(y, 9).Value
+        Cells(2, 17).Value = Cells(y, 11).Value
+        ElseIf Cells(y, 11).Value = Application.WorksheetFunction.Min(ActiveSheet.Range("K2:K" & LastRow_2)) Then
+        Cells(3, 16).Value = Cells(y, 9).Value
+        Cells(3, 17).Value = Cells(y, 11).Value
+        ElseIf Cells(y, 12).Value = Application.WorksheetFunction.Max(ActiveSheet.Range("L2:L" & LastRow_2)) Then
+        Cells(4, 16).Value = Cells(y, 9).Value
+        Cells(4, 17).Value = Cells(y, 12).Value
+    End If
+    Next y
+
+MsgBox ActiveWorkbook.Worksheets(current).Name
+Next current
+End Sub
+
+
